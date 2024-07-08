@@ -1,0 +1,11 @@
+{
+  "description": "DNS configuration for tasin.is-cool.dev",
+  "domain": "tasin.is-cool.dev",
+  "subdomain": "_github-pages-challenge-tasinone",
+  "record": {
+    "TXT": [
+      "18f7194a5cecc963de377f8649ebbd"
+    ]
+  },
+  "proxied": true
+}
