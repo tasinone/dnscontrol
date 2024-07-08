@@ -1,6 +1,27 @@
 var regNone = NewRegistrar("none");
 var providerCf = DnsProvider(NewDnsProvider("cloudflare"));
 
+var proxy = { // https://stackexchange.github.io/dnscontrol/providers/cloudflare
+  on: { "cloudflare_proxy": "on" },
+  off: { "cloudflare_proxy": "off" }
+}
+
+/**
+ * Note: glob() is only an internal undocumented helper function (maybe risky).
+ *
+ * @param {String} filesPath
+ * @returns {{
+ *  name: string,
+ *  data: {
+ *    description?: string,
+ *    domain: string,
+ *    subdomain: string,
+ *    owner?: {repo?: string, email?: string},
+ *    record: {TXT?: string[], A?: string[], AAAA?: string[], CNAME?: string, NS?: string[]},
+ *    proxied?: boolean
+ *  }}[]}
+*/
+
 function getDomainsList(filesPath) {
   var result = [];
   var files = glob.apply(null, [filesPath, true, '.json']);
@@ -17,27 +38,69 @@ function getDomainsList(filesPath) {
 
 var domains = getDomainsList('./domains');
 
+/**
+ * @type {{}}
+*/
+
 var commit = {};
 
 for (var idx in domains) {
   var domainData = domains[idx].data;
-  var proxyState = { "cloudflare_proxy": "off" }; // Adjust based on your requirements
+  var proxyState = proxy.on; // enabled by default
 
   if (!commit[domainData.domain]) {
     commit[domainData.domain] = [];
   }
 
-  // Add NS records
-  if (domainData.record.NS) {
-    for (var ns in domainData.record.NS) {
+  if (domainData.proxied === false) {
+    proxyState = proxy.off;
+  }
+
+  if (domainData.record.A) {
+    for (var a in domainData.record.A) {
       commit[domainData.domain].push(
-        NS(domainData.domain, domainData.record.NS[ns])
-      );
+        A(domainData.subdomain, IP(domainData.record.A[a]), proxyState) // https://stackexchange.github.io/dnscontrol/js#A
+      )
     }
   }
 
-  // You can add other record types (A, AAAA, CNAME, MX, TXT) similarly
+  if (domainData.record.AAAA) {
+    for (var aaaa in domainData.record.AAAA) {
+      commit[domainData.domain].push(
+        AAAA(domainData.subdomain, domainData.record.AAAA[aaaa], proxyState) // https://stackexchange.github.io/dnscontrol/js#AAAA
+      )
+    }
+  }
 
+  if (domainData.record.CNAME) {
+    commit[domainData.domain].push(
+      CNAME(domainData.subdomain, domainData.record.CNAME + ".", proxyState) // https://stackexchange.github.io/dnscontrol/js#CNAME
+    )
+  }
+  
+  if (domainData.record.MX) {
+    for (var mx in domainData.record.MX) {
+      commit[domainData.domain].push(
+        MX(domainData.subdomain, 10, domainData.record.MX[mx] + ".") // https://stackexchange.github.io/dnscontrol/js#CNAME
+      )
+    }  
+  }
+
+  if (domainData.record.NS) {
+    for (var ns in domainData.record.NS) {
+      commit[domainData.domain].push(
+        NS(domainData.subdomain, domainData.record.NS[ns] + ".") // https://stackexchange.github.io/dnscontrol/js#NS
+      )
+    }
+  }
+
+  if (domainData.record.TXT) {
+    for (var txt in domainData.record.TXT) {
+      commit[domainData.domain].push(
+        TXT(domainData.subdomain, domainData.record.TXT[txt]) // https://stackexchange.github.io/dnscontrol/js#TXT
+      )
+    }
+  }
 }
 
 for (var domainName in commit) {
