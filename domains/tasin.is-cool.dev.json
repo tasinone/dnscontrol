@@ -1,11 +1,12 @@
 {
   "description": "DNS configuration for tasin.is-cool.dev",
-  "domain": "tasin.is-cool.dev",
+  "domain": "is-cool.dev",
+  "subdomain": "tasin",  // Since NS records typically apply to the main domain, leave this empty
   "record": {
     "NS": [
-      "oswald.ns.cloudflare.com.",
-      "stevie.ns.cloudflare.com."
+      "oswald.ns.cloudflare.com",
+      "stevie.ns.cloudflare.com"
     ]
   },
-  "proxied": true
+  "proxied": false
 }
