@@ -3,9 +3,8 @@
   "domain": "tasin.is-cool.dev",
   "record": {
     "NS": [
-      "oswald.ns.cloudflare.com",
-      "stevie.ns.cloudflare.com"
-      // Add more Cloudflare NS records if provided
+      "tasin.is-cool.dev, oswald.ns.cloudflare.com",
+      "tasin.is-cool.dev, stevie.ns.cloudflare.com"
     ]
   },
   "proxied": false
