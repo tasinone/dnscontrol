@@ -9,6 +9,11 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
       - uses: actions/checkout@v2
 
       - name: DNSControl check
@@ -19,6 +24,11 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
       - uses: actions/checkout@v2
 
       - name: DNSControl preview
@@ -32,6 +42,11 @@ jobs:
   push:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
       - uses: actions/checkout@v2
 
       - name: DNSControl push
