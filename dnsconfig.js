@@ -1,11 +1,6 @@
 var regNone = NewRegistrar("none");
 var providerCf = DnsProvider(NewDnsProvider("cloudflare"));
 
-var proxy = {
-  on: { "cloudflare_proxy": "on" },
-  off: { "cloudflare_proxy": "off" }
-};
-
 function getDomainsList(filesPath) {
   var result = [];
   var files = glob.apply(null, [filesPath, true, '.json']);
@@ -26,64 +21,25 @@ var commit = {};
 
 for (var idx in domains) {
   var domainData = domains[idx].data;
-  var proxyState = proxy.on; // enabled by default
+  var proxyState = { "cloudflare_proxy": "off" }; // Adjust based on your requirements
 
   if (!commit[domainData.domain]) {
     commit[domainData.domain] = [];
   }
 
-  if (domainData.proxied === false) {
-    proxyState = proxy.off;
-  }
-
-  if (domainData.record.A) {
-    for (var a in domainData.record.A) {
-      commit[domainData.domain].push(
-        A(domainData.subdomain, IP(domainData.record.A[a]), proxyState)
-      )
-    }
-  }
-
-  if (domainData.record.AAAA) {
-    for (var aaaa in domainData.record.AAAA) {
-      commit[domainData.domain].push(
-        AAAA(domainData.subdomain, domainData.record.AAAA[aaaa], proxyState)
-      )
-    }
-  }
-
-  if (domainData.record.CNAME) {
-    commit[domainData.domain].push(
-      CNAME(domainData.subdomain, domainData.record.CNAME + ".", proxyState)
-    )
-  }
-  
-  if (domainData.record.MX) {
-    for (var mx in domainData.record.MX) {
-      commit[domainData.domain].push(
-        MX(domainData.subdomain, 10, domainData.record.MX[mx] + ".")
-      )
-    }  
-  }
-
+  // Add NS records
   if (domainData.record.NS) {
     for (var ns in domainData.record.NS) {
       commit[domainData.domain].push(
-        NS(domainData.subdomain, domainData.record.NS[ns] + ".")
-      )
+        NS(domainData.domain, domainData.record.NS[ns])
+      );
     }
   }
 
-  if (domainData.record.TXT) {
-    for (var txt in domainData.record.TXT) {
-      commit[domainData.domain].push(
-        TXT(domainData.subdomain, domainData.record.TXT[txt])
-      )
-    }
-  }
+  // You can add other record types (A, AAAA, CNAME, MX, TXT) similarly
+
 }
 
 for (var domainName in commit) {
   D(domainName, regNone, providerCf, commit[domainName]);
 }
-
