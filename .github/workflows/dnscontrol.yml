@@ -1,0 +1,42 @@
+name: DNSControl
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: DNSControl check
+        uses: is-cool-me/dnscontrol-action@v4.11.0
+        with:
+          args: check
+
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: DNSControl preview
+        uses: is-cool-me/dnscontrol-action@v4.11.0
+        id: dnscontrol_preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        with:
+          args: preview
+
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: DNSControl push
+        uses: is-cool-me/dnscontrol-action@v4.11.0
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        with:
+          args: push
